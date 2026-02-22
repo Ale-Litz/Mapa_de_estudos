@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Solutions Architect Associate — Mapa de Estudo</title>
+<link rel="stylesheet" href="../../../assets/css/main.css">
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">
+      <span class="aws-badge">AWS</span>
+      <h1>Solutions <span>Architect</span></h1>
+    </div>
+    <p class="subtitle">// mapa de dependências de estudo · SAA-C03 · v2</p>
+  </div>
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-number" id="total-count">30</div>
+      <div class="stat-label">Tópicos</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number" id="done-count">0</div>
+      <div class="stat-label">Concluídos</div>
+    </div>
+  </div>
+</header>
+
+<div class="progress-bar">
+  <span class="progress-label">PROGRESSO GERAL</span>
+  <div class="bar-track"><div class="bar-fill" id="prog-fill"></div></div>
+  <span class="progress-count" id="prog-pct">0%</span>
+</div>
+
+<div class="legend" id="legend"></div>
+
+<main id="main"></main>
+
+<!-- DETAIL PAGE -->
+<div class="detail-page" id="detailPage"></div>
+
+<!-- MODAL ADD QUESTION -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h2 class="modal-title">＋ Nova <span>Pergunta</span></h2>
+
+    <div class="field">
+      <label>Texto da Pergunta</label>
+      <textarea id="qText" placeholder="Digite a pergunta aqui..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>Resposta</label>
+      <textarea id="qAnswer" placeholder="Digite a resposta aqui..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>Tópicos Relacionados</label>
+      <div class="tag-select-grid" id="tagGrid"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveQuestion()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="notif" id="notif"></div>
+
+<script>
+// LocalStorage with window.storage compatibility
+window.storage = {
+  get: async (key) => {
+    const value = localStorage.getItem(key);
+    return value ? { value } : null;
+  },
+  set: async (key, value) => {
+    localStorage.setItem(key, value);
+  }
+};
+
+// ============================================================
+//  CATEGORIES
+// ============================================================
+const categories = {
+  arch:  { label: 'Arquitetura',      color: '#7c6fff', icon: '🏗️' },
+  comp:  { label: 'Computação',       color: '#22d3ee', icon: '⚡' },
+  store: { label: 'Armazenamento',    color: '#34d399', icon: '🗄️' },
+  db:    { label: 'Bancos de Dados',  color: '#a78bfa', icon: '🗃️' },
+  net:   { label: 'Rede',             color: '#fbbf24', icon: '🌐' },
+  sec:   { label: 'Segurança',        color: '#f472b6', icon: '🔒' },
+  integ: { label: 'Integração',       color: '#2dd4bf', icon: '🔗' },
+  mon:   { label: 'Monitoramento',    color: '#818cf8', icon: '📊' },
+  cost:  { label: 'Custos',           color: '#10b981', icon: '💵' },
+  gov:   { label: 'Governança',       color: '#f59e0b', icon: '📋' },
+};
+
+// ============================================================
+//  INITIAL QUESTIONS DATA
+// ============================================================
+const initialQuestions = [
+  { id: 'q-initial-1', question: 'Para manter a infraestrutura de uma aplicação elástica e balanceada, quais serviços devem ser utilizados? (Escolha 2 alternativas)', answer: 'Respostas corretas: ASG e ELB\n\nASG gerencia automaticamente o número de instâncias EC2 conforme demanda. ELB distribui o tráfego entre instâncias.', tags: ['t4', 't6'], createdAt: new Date().toISOString() },
+  { id: 'q-initial-2', question: 'Uma empresa deseja implantar uma rede social interna que facilite a conexão entre colaboradores com grafos. Qual banco de dados?', answer: 'Resposta correta: Amazon Neptune\n\nAmazon Neptune é um banco de dados de grafos totalmente gerenciado pela AWS.', tags: ['t10'], createdAt: new Date().toISOString() },
+  { id: 'q-initial-3', question: 'Sua empresa precisa criar um chat interativo com central de atendimento omnichannel. Qual serviço?', answer: 'Resposta correta: Amazon Connect\n\nAmazon Connect é um serviço de contact center totalmente gerenciado com suporte omnichannel.', tags: ['t15'], createdAt: new Date().toISOString() },
+  { id: 'q-initial-4', question: 'Uma repartição licenciou Microsoft e Adobe. Qual serviço AWS auxilia no controle de licenças?', answer: 'Resposta correta: License Manager\n\nAWS License Manager simplifica a gestão e conformidade de licenças de software.', tags: ['t17'], createdAt: new Date().toISOString() },
+  { id: 'q-initial-5', question: 'A equipe DevOps criou CI/CD na AWS. Qual serviço é encarregado de compilação e testes automatizados?', answer: 'Resposta correta: AWS CodeBuild\n\nAWS CodeBuild compila código-fonte, executa testes e produz artefatos.', tags: ['t4', 't15'], createdAt: new Date().toISOString() },
+  { id: 'q-initial-6', question: 'Qual serviço hospeda servidores em uma rede virtual isolada?', answer: 'Resposta correta: AWS VPC (Virtual Private Cloud)\n\nAWS VPC permite criar rede virtual isolada com controle total.', tags: ['t6'], createdAt: new Date().toISOString() },
+  { id: 'q-initial-7', question: 'Uma empresa busca integrar sua rede on-premises a AWS com menor latência. Qual serviço?', answer: 'Resposta correta: AWS Direct Connect\n\nAWS Direct Connect estabelece conexão dedicada e privada.', tags: ['t6'], createdAt: new Date().toISOString() },
+  { id: 'q-initial-8', question: 'Como AWS IoT Core assegura segurança nas comunicações?', answer: 'Resposta correta: Certificados para autenticação, TLS para dados em trânsito, políticas IAM.', tags: ['t15'], createdAt: new Date().toISOString() },
+  { id: 'q-initial-9', question: 'Qual serviço fornece recomendações para otimizar e garantir segurança?', answer: 'Resposta correta: Trusted Advisor\n\nAWS Trusted Advisor fornece recomendações em 5 categorias.', tags: ['t14'], createdAt: new Date().toISOString() },
+  { id: 'q-initial-10', question: 'Como estimar um teto mensal e receber notificação por email?', answer: 'Resposta correta: AWS Budgets\n\nAWS Budgets permite definir orçamentos e alertas.', tags: ['t16'], createdAt: new Date().toISOString() }
+];
+
+// ============================================================
+//  PHASES/TOPICS STRUCTURE
+// ============================================================
+const phases = [
+  { id: 'p1', title: 'Fase 1 — Arquitetura & Design' },
+  { id: 'p2', title: 'Fase 2 — Computação' },
+  { id: 'p3', title: 'Fase 3 — Armazenamento & Bancos de Dados' },
+  { id: 'p4', title: 'Fase 4 — Rede e Segurança' },
+  { id: 'p5', title: 'Fase 5 — Integração & Monitoramento' },
+  { id: 'p6', title: 'Fase 6 — Otimização e Governança' },
+];
+
+const topics = [
+  { id: 't1', phase: 'p1', cat: 'arch', title: 'AWS Well-Architected Framework', desc: 'Framework for designing secure, high-performing, resilient, and efficient cloud architectures', tags: ['arquitetura', 'peso alto'], weight: 3, services: ['AWS CloudFormation', 'AWS Systems Manager'], deps: [], tips: 'Study all 6 pillars: Operational Excellence, Security, Reliability, Performance Efficiency, Cost Optimization, Sustainability', docs: [{ title: 'Well-Architected Framework', url: 'https://aws.amazon.com/architecture/well-architected/' }, { title: 'AWS Well-Architected Tool', url: 'https://console.aws.amazon.com/wellarchitected/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>Operational Excellence</h4><p>Run and monitor systems to deliver business value, continually improve processes</p></div><div class="concept-card"><h4>Security</h4><p>Protect information, systems, and assets while maintaining business continuity</p></div><div class="concept-card"><h4>Reliability</h4><p>Ensure a workload performs its intended function and can recover from failures automatically</p></div><div class="concept-card"><h4>Performance & Cost</h4><p>Use resources efficiently and monitor costs to achieve business objectives</p></div></div>` },
+  { id: 't2', phase: 'p1', cat: 'arch', title: 'Architectural Design Patterns', desc: 'Common architectural patterns and design principles for scalable AWS solutions', tags: ['padrões', 'design'], weight: 3, services: ['AWS Architecture Center'], deps: ['t1'], tips: 'Focus on: loosely coupled systems, scalability patterns, fault tolerance, separation of concerns', docs: [{ title: 'AWS Architecture Patterns', url: 'https://aws.amazon.com/architecture/' }, { title: 'Microservices Patterns', url: 'https://docs.aws.amazon.com/whitepapers/latest/microservices-on-aws/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>Loose Coupling</h4><p>Systems decoupled so changes in one component don't affect others</p></div><div class="concept-card"><h4>Scalability</h4><p>Systems handle increasing loads by scaling horizontally and vertically</p></div><div class="concept-card"><h4>Fault Tolerance</h4><p>Systems continue operating despite failures of individual components</p></div><div class="concept-card"><h4>Multi-AZ & DR</h4><p>Distribute across zones and plan for business continuity</p></div></div>` },
+  { id: 't3', phase: 'p1', cat: 'cost', title: 'Cost Optimization Fundamentals', desc: 'Strategies for optimizing AWS costs and resource utilization', tags: ['custos', 'otimização'], weight: 2, services: ['AWS Cost Explorer', 'AWS Budgets', 'AWS Pricing Calculator'], deps: ['t1'], tips: 'Know pillars: Right-sizing, Reserved Capacity, Automation, Managed Services', docs: [{ title: 'Cost Optimization Pillar', url: 'https://docs.aws.amazon.com/wellarchitected/latest/cost-optimization-pillar/' }, { title: 'AWS Pricing', url: 'https://aws.amazon.com/pricing/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>Right-Sizing Instances</h4><p>Select appropriate instance types to match actual workload requirements</p></div><div class="concept-card"><h4>Reserved Instances</h4><p>Commit to usage patterns for significant discounts vs on-demand</p></div><div class="concept-card"><h4>Managed Services</h4><p>Use AWS managed services to reduce operational overhead and licensing</p></div><div class="concept-card"><h4>Resource Monitoring</h4><p>Track costs to identify optimization opportunities</p></div></div>` },
+  { id: 't4', phase: 'p1', cat: 'arch', title: 'Reliability & High Availability', desc: 'Designing highly available and fault-tolerant systems with minimal downtime', tags: ['confiabilidade', 'peso alto'], weight: 3, services: ['Amazon Route 53', 'AWS Auto Scaling', 'Amazon ELB'], deps: ['t1'], tips: 'Remember RPO (Recovery Point Objective) and RTO (Recovery Time Objective)', docs: [{ title: 'Reliability Pillar', url: 'https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/' }, { title: 'High Availability', url: 'https://aws.amazon.com/architecture/ha-applications/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>Multi-AZ Deployment</h4><p>Distribute across zones for automatic failover capability</p></div><div class="concept-card"><h4>Load Balancing</h4><p>Distribute traffic across multiple instances for availability</p></div><div class="concept-card"><h4>Planning for Failure</h4><p>Design systems that gracefully handle and recover from failures</p></div><div class="concept-card"><h4>RPO and RTO</h4><p>Define recovery objectives for business continuity</p></div></div>` },
+  { id: 't5', phase: 'p1', cat: 'arch', title: 'Performance Optimization', desc: 'Strategies for optimizing application performance, latency, and throughput', tags: ['performance', 'escalabilidade'], weight: 2, services: ['Amazon CloudFront', 'Amazon ElastiCache', 'AWS Global Accelerator'], deps: ['t1'], tips: 'Focus on caching, content delivery, auto-scaling, and monitoring metrics', docs: [{ title: 'Performance Efficiency Pillar', url: 'https://docs.aws.amazon.com/wellarchitected/latest/performance-efficiency-pillar/' }, { title: 'AWS Performance', url: 'https://aws.amazon.com/performance-optimization/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>Caching Strategies</h4><p>Implement caching at multiple levels to reduce latency</p></div><div class="concept-card"><h4>Content Delivery</h4><p>Use CloudFront for global content delivery with minimal latency</p></div><div class="concept-card"><h4>Database Optimization</h4><p>Choose appropriate database type and query optimization</p></div><div class="concept-card"><h4>Compute Optimization</h4><p>Select instance types and scaling policies for performance</p></div></div>` },
+  { id: 't6', phase: 'p2', cat: 'comp', title: 'Amazon EC2 Instances', desc: 'Configuring, launching, and managing virtual machines on AWS', tags: ['computação', 'peso alto'], weight: 3, services: ['Amazon EC2', 'Amazon Machine Images', 'EC2 Instance Store'], deps: [], tips: 'Master instance types, families, placement groups, and lifecycle management', docs: [{ title: 'EC2 User Guide', url: 'https://docs.aws.amazon.com/ec2/' }, { title: 'EC2 Instance Types', url: 'https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>Instance Types</h4><p>Different families optimized for different workloads</p></div><div class="concept-card"><h4>Purchasing Options</h4><p>On-Demand, Reserved, Spot, and Dedicated with different pricing</p></div><div class="concept-card"><h4>AMI & Storage</h4><p>Amazon Machine Images and choosing between EBS or Instance Store</p></div><div class="concept-card"><h4>Security & Connectivity</h4><p>IAM roles, security groups, VPC placement, and key pairs</p></div></div>` },
+  { id: 't7', phase: 'p2', cat: 'comp', title: 'Elastic Load Balancing', desc: 'Distributing incoming traffic across EC2 instances for higher availability', tags: ['balanceamento', 'performance'], weight: 3, services: ['Application Load Balancer', 'Network Load Balancer', 'Classic Load Balancer'], deps: ['t6'], tips: 'Know differences between ALB, NLB, and CLB. Understand target groups and health checks', docs: [{ title: 'Elastic Load Balancing', url: 'https://docs.aws.amazon.com/elasticloadbalancing/' }, { title: 'Load Balancer Types', url: 'https://docs.aws.amazon.com/AmazonECS/latest/developerguide/load-balancing.html' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>ALB</h4><p>Application Load Balancer for HTTP/HTTPS with path/hostname routing</p></div><div class="concept-card"><h4>NLB</h4><p>Network Load Balancer for ultra-low latency TCP/UDP traffic</p></div><div class="concept-card"><h4>Health Checks</h4><p>Monitor instance health and remove unhealthy instances</p></div><div class="concept-card"><h4>Target Groups</h4><p>Define routing rules and target destinations</p></div></div>` },
+  { id: 't8', phase: 'p2', cat: 'comp', title: 'EC2 Auto Scaling', desc: 'Automatically scaling EC2 instances based on demand', tags: ['escalabilidade', 'automação'], weight: 3, services: ['Auto Scaling Groups', 'Launch Templates', 'Scaling Policies'], deps: ['t6', 't7'], tips: 'Understand ASG lifecycle, scaling policies, and cooldown periods', docs: [{ title: 'EC2 Auto Scaling', url: 'https://docs.aws.amazon.com/autoscaling/' }, { title: 'Auto Scaling Groups', url: 'https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-groups.html' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>Auto Scaling Groups</h4><p>Group of instances that automatically scale based on metrics</p></div><div class="concept-card"><h4>Scaling Policies</h4><p>Target tracking, step, and scheduled scaling policies</p></div><div class="concept-card"><h4>Launch Templates</h4><p>Define EC2 configuration for use when scaling up</p></div><div class="concept-card"><h4>Lifecycle Hooks</h4><p>Handle graceful shutdown during scale-down operations</p></div></div>` },
+  { id: 't9', phase: 'p2', cat: 'comp', title: 'AWS Lambda & Serverless', desc: 'Building serverless applications for event-driven computing without managing servers', tags: ['serverless', 'funções'], weight: 2, services: ['AWS Lambda', 'AWS SAM', 'Lambda Layers'], deps: [], tips: 'Know triggers, memory/timeout, concurrency limits, cold starts', docs: [{ title: 'AWS Lambda', url: 'https://docs.aws.amazon.com/lambda/' }, { title: 'Lambda Developer Guide', url: 'https://docs.aws.amazon.com/lambda/latest/dg/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>Lambda Execution</h4><p>Serverless compute executing code in response to events</p></div><div class="concept-card"><h4>Event Sources</h4><p>S3, API Gateway, DynamoDB, SNS, SQS, CloudWatch</p></div><div class="concept-card"><h4>Configuration</h4><p>Memory allocation, timeout, environment variables, concurrency</p></div><div class="concept-card"><h4>Pricing</h4><p>Pay for execution time, scales automatically</p></div></div>` },
+  { id: 't10', phase: 'p2', cat: 'comp', title: 'Container Services (ECS & ECR)', desc: 'Running containerized applications with Elastic Container Service', tags: ['containers', 'docker'], weight: 2, services: ['Amazon ECS', 'Amazon ECR', 'AWS Fargate', 'Amazon EKS'], deps: ['t7'], tips: 'Understand task definitions, services, launch types', docs: [{ title: 'Amazon ECS', url: 'https://docs.aws.amazon.com/ecs/' }, { title: 'ECS Developer Guide', url: 'https://docs.aws.amazon.com/AmazonECS/latest/developerguide/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>ECS Components</h4><p>Containers, task definitions, services, and clusters</p></div><div class="concept-card"><h4>Launch Types</h4><p>EC2 launch type or Fargate for serverless containers</p></div><div class="concept-card"><h4>ECR</h4><p>Store and manage Docker images with integration</p></div><div class="concept-card"><h4>Service Management</h4><p>Deploy and manage containerized applications</p></div></div>` },
+  { id: 't11', phase: 'p3', cat: 'store', title: 'Amazon S3 Storage', desc: 'Simple Storage Service for object storage with scalability and durability', tags: ['armazenamento', 'peso alto'], weight: 3, services: ['Amazon S3', 'S3 Glacier', 'S3 Storage Classes'], deps: [], tips: 'Master storage classes, lifecycle policies, versioning, encryption', docs: [{ title: 'Amazon S3', url: 'https://docs.aws.amazon.com/s3/' }, { title: 'S3 User Guide', url: 'https://docs.aws.amazon.com/AmazonS3/latest/userguide/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>Storage Classes</h4><p>Standard, Intelligent-Tiering, Glacier, Deep Archive</p></div><div class="concept-card"><h4>Lifecycle Policies</h4><p>Automatically transition objects between classes</p></div><div class="concept-card"><h4>Security</h4><p>Versioning, encryption, bucket policies, IAM permissions</p></div><div class="concept-card"><h4>Features</h4><p>Replication, CloudFront integration, static websites</p></div></div>` },
+  { id: 't12', phase: 'p3', cat: 'store', title: 'Amazon EBS Volumes', desc: 'Elastic Block Store for persistent storage attached to EC2 instances', tags: ['armazenamento', 'performance'], weight: 2, services: ['Amazon EBS', 'EBS Snapshots', 'EBS Volume Types'], deps: ['t6'], tips: 'Know volume types (gp3, io2, st1), snapshots, encryption', docs: [{ title: 'Amazon EBS', url: 'https://docs.aws.amazon.com/ebs/' }, { title: 'EBS User Guide', url: 'https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AmazonEBS.html' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>Volume Types</h4><p>gp3, io2, st1, sc1 for different workloads</p></div><div class="concept-card"><h4>Performance</h4><p>IOPS and throughput for workload requirements</p></div><div class="concept-card"><h4>Snapshots</h4><p>Point-in-time snapshots for backup and recovery</p></div><div class="concept-card"><h4>Security</h4><p>Encryption and multi-attach capability</p></div></div>` },
+  { id: 't13', phase: 'p3', cat: 'db', title: 'Amazon RDS - Relational Databases', desc: 'Managed relational database service supporting multiple database engines', tags: ['bancos de dados', 'peso alto'], weight: 3, services: ['Amazon RDS', 'Amazon Aurora', 'RDS Multi-AZ'], deps: [], tips: 'Master RDS engines, Multi-AZ, Read Replicas, backups, failover', docs: [{ title: 'Amazon RDS', url: 'https://docs.aws.amazon.com/rds/' }, { title: 'RDS User Guide', url: 'https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>Database Engines</h4><p>MySQL, PostgreSQL, MariaDB, Oracle, SQL Server</p></div><div class="concept-card"><h4>Multi-AZ</h4><p>Synchronous replication for automatic failover</p></div><div class="concept-card"><h4>Read Replicas</h4><p>Asynchronous replicas for scaling read operations</p></div><div class="concept-card"><h4>Backup & Monitoring</h4><p>Automated backups and Performance Insights</p></div></div>` },
+  { id: 't14', phase: 'p3', cat: 'db', title: 'Amazon DynamoDB', desc: 'Fully managed NoSQL database service for high-performance applications', tags: ['bancos de dados', 'nosql'], weight: 2, services: ['Amazon DynamoDB', 'DynamoDB Streams', 'Global Tables'], deps: [], tips: 'Master partition keys, sort keys, capacity modes, indexes', docs: [{ title: 'Amazon DynamoDB', url: 'https://docs.aws.amazon.com/dynamodb/' }, { title: 'DynamoDB Developer Guide', url: 'https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>Data Model</h4><p>Partition key and sort key design</p></div><div class="concept-card"><h4>Capacity Modes</h4><p>Provisioned or On-Demand pricing</p></div><div class="concept-card"><h4>Indexes</h4><p>Global and Local Secondary Indexes</p></div><div class="concept-card"><h4>Global Features</h4><p>Multi-region replication and stream processing</p></div></div>` },
+  { id: 't15', phase: 'p3', cat: 'store', title: 'Data Migration Services', desc: 'AWS services for migrating data to AWS cloud', tags: ['migração', 'dados'], weight: 2, services: ['AWS DMS', 'AWS DataSync', 'AWS Snowball', 'Storage Gateway'], deps: ['t11', 't13'], tips: 'DMS for databases, DataSync for on-premises, Snowball for physical transfer', docs: [{ title: 'AWS DMS', url: 'https://docs.aws.amazon.com/dms/' }, { title: 'AWS DataSync', url: 'https://docs.aws.amazon.com/datasync/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>DMS</h4><p>Migrate databases with minimal downtime</p></div><div class="concept-card"><h4>DataSync</h4><p>Transfer on-premises data to AWS services</p></div><div class="concept-card"><h4>Snowball</h4><p>Physical data transfer for large-scale migrations</p></div><div class="concept-card"><h4>Strategies</h4><p>Rehost, Replatform, Refactor, Repurchase, Retire</p></div></div>` },
+  { id: 't16', phase: 'p4', cat: 'net', title: 'VPC Fundamentals', desc: 'Virtual Private Cloud for creating isolated networks with custom IP addressing', tags: ['rede', 'peso alto'], weight: 3, services: ['Amazon VPC', 'Subnets', 'Route Tables', 'Internet Gateways'], deps: [], tips: 'Master VPC design, subnets, CIDR, public/private subnets, NAT', docs: [{ title: 'Amazon VPC', url: 'https://docs.aws.amazon.com/vpc/' }, { title: 'VPC User Guide', url: 'https://docs.aws.amazon.com/vpc/latest/userguide/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>VPC Components</h4><p>Subnets, route tables, gateways form infrastructure</p></div><div class="concept-card"><h4>CIDR</h4><p>Classless Inter-Domain Routing for IP ranges</p></div><div class="concept-card"><h4>Public vs Private</h4><p>Public with internet, private for protected resources</p></div><div class="concept-card"><h4>NAT & Endpoints</h4><p>Network Address Translation and VPC endpoints</p></div></div>` },
+  { id: 't17', phase: 'p4', cat: 'sec', title: 'Security Groups & Network ACLs', desc: 'Virtual firewalls controlling inbound and outbound traffic', tags: ['segurança', 'firewall'], weight: 2, services: ['Security Groups', 'Network ACLs', 'VPC Flow Logs'], deps: ['t16'], tips: 'Stateful (SG) vs stateless (NACL) filtering', docs: [{ title: 'Security Groups', url: 'https://docs.aws.amazon.com/vpc/latest/userguide/VPC_SecurityGroups.html' }, { title: 'Network ACLs', url: 'https://docs.aws.amazon.com/vpc/latest/userguide/vpc-network-acls.html' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>Security Groups</h4><p>Stateful firewall at instance level</p></div><div class="concept-card"><h4>Network ACLs</h4><p>Stateless firewall at subnet level</p></div><div class="concept-card"><h4>Rules</h4><p>Protocol, port range, source/destination specifications</p></div><div class="concept-card"><h4>Best Practices</h4><p>Least privilege and Flow Logs monitoring</p></div></div>` },
+  { id: 't18', phase: 'p4', cat: 'sec', title: 'IAM Policies & Access Control', desc: 'Identity and Access Management for controlling access to resources', tags: ['segurança', 'autenticação'], weight: 3, services: ['AWS IAM', 'IAM Policies', 'IAM Roles', 'IAM Users'], deps: [], tips: 'Know policy structure, roles vs users, assume role mechanics', docs: [{ title: 'AWS IAM', url: 'https://docs.aws.amazon.com/iam/' }, { title: 'IAM User Guide', url: 'https://docs.aws.amazon.com/IAM/latest/UserGuide/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>IAM Structure</h4><p>Users, groups, roles, and policies</p></div><div class="concept-card"><h4>Policy Language</h4><p>JSON with Principal, Effect, Action, Resource</p></div><div class="concept-card"><h4>Roles</h4><p>Cross-account access and service roles</p></div><div class="concept-card"><h4>Least Privilege</h4><p>Grant minimum necessary permissions</p></div></div>` },
+  { id: 't19', phase: 'p4', cat: 'sec', title: 'Encryption & AWS KMS', desc: 'Encrypting data at rest and in transit using AWS Key Management Service', tags: ['segurança', 'criptografia'], weight: 3, services: ['AWS KMS', 'AWS CloudHSM', 'S3 Encryption', 'RDS Encryption'], deps: ['t18'], tips: 'Master KMS keys, encryption at rest and transit, key rotation', docs: [{ title: 'AWS KMS', url: 'https://docs.aws.amazon.com/kms/' }, { title: 'KMS Developer Guide', url: 'https://docs.aws.amazon.com/kms/latest/developerguide/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>KMS Keys</h4><p>AWS managed, customer managed (CMK), external keys</p></div><div class="concept-card"><h4>At Rest Encryption</h4><p>S3, RDS, EBS, DynamoDB encryption</p></div><div class="concept-card"><h4>In Transit Encryption</h4><p>TLS/SSL for data transmission</p></div><div class="concept-card"><h4>Key Management</h4><p>Key rotation, aliases, grants, policies</p></div></div>` },
+  { id: 't20', phase: 'p4', cat: 'net', title: 'VPN, Direct Connect & Connectivity', desc: 'Establishing secure connections between on-premises and AWS', tags: ['rede', 'conectividade'], weight: 2, services: ['AWS VPN', 'AWS Direct Connect', 'VPC Peering', 'Transit Gateway'], deps: ['t16'], tips: 'Understand Site-to-Site VPN, Client VPN, Direct Connect', docs: [{ title: 'AWS VPN', url: 'https://docs.aws.amazon.com/vpn/' }, { title: 'AWS Direct Connect', url: 'https://docs.aws.amazon.com/directconnect/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>Site-to-Site VPN</h4><p>Encrypted connection over the internet</p></div><div class="concept-card"><h4>Direct Connect</h4><p>Dedicated connection for consistent performance</p></div><div class="concept-card"><h4>Peering & Transit Gateway</h4><p>Connect VPCs directly or through hub</p></div><div class="concept-card"><h4>Client VPN</h4><p>Connect users to VPC resources</p></div></div>` },
+  { id: 't21', phase: 'p4', cat: 'net', title: 'Route 53 & Domain Management', desc: 'DNS management service and traffic routing for high availability', tags: ['rede', 'dns'], weight: 2, services: ['Amazon Route 53', 'Health Checks', 'Traffic Policies'], deps: ['t16'], tips: 'Know DNS record types and routing policies', docs: [{ title: 'Amazon Route 53', url: 'https://docs.aws.amazon.com/route53/' }, { title: 'Route 53 Developer Guide', url: 'https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>DNS Records</h4><p>A, AAAA, CNAME, MX records</p></div><div class="concept-card"><h4>Routing Policies</h4><p>Simple, weighted, latency-based, failover</p></div><div class="concept-card"><h4>Health Checks</h4><p>Monitor and update routing automatically</p></div><div class="concept-card"><h4>Domain Registration</h4><p>Register domains with automatic DNS</p></div></div>` },
+  { id: 't22', phase: 'p5', cat: 'integ', title: 'SQS & SNS Messaging', desc: 'Message services for decoupled communication between components', tags: ['integração', 'mensageria'], weight: 3, services: ['Amazon SQS', 'Amazon SNS', 'FIFO Queues', 'Dead Letter Queues'], deps: [], tips: 'Master SQS, SNS, FIFO vs standard, Dead Letter Queues', docs: [{ title: 'Amazon SQS', url: 'https://docs.aws.amazon.com/sqs/' }, { title: 'Amazon SNS', url: 'https://docs.aws.amazon.com/sns/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>SQS</h4><p>Fully managed message queue for decoupling</p></div><div class="concept-card"><h4>SNS</h4><p>Pub/Sub messaging for one-to-many</p></div><div class="concept-card"><h4>Queue Configuration</h4><p>Visibility, retention, Dead Letter Queues</p></div><div class="concept-card"><h4>FIFO</h4><p>Ordered processing and exactly-once delivery</p></div></div>` },
+  { id: 't23', phase: 'p5', cat: 'mon', title: 'CloudWatch Monitoring & Observability', desc: 'Monitoring and observability for AWS resources and applications', tags: ['monitoramento', 'observabilidade'], weight: 3, services: ['Amazon CloudWatch', 'CloudWatch Metrics', 'CloudWatch Logs', 'CloudWatch Alarms'], deps: [], tips: 'Understand metrics, logs, alarms, dashboards, and Log Insights', docs: [{ title: 'Amazon CloudWatch', url: 'https://docs.aws.amazon.com/cloudwatch/' }, { title: 'CloudWatch User Guide', url: 'https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>Metrics & Dashboards</h4><p>Collect and visualize resource metrics</p></div><div class="concept-card"><h4>CloudWatch Logs</h4><p>Centralized log storage from services</p></div><div class="concept-card"><h4>Alarms</h4><p>Set thresholds and send notifications</p></div><div class="concept-card"><h4>Log Insights</h4><p>Query and analyze logs in real-time</p></div></div>` },
+  { id: 't24', phase: 'p5', cat: 'mon', title: 'AWS CloudTrail & Logging', desc: 'Audit logging service for tracking AWS API calls and activity', tags: ['auditoria', 'compliance'], weight: 2, services: ['AWS CloudTrail', 'CloudTrail Insights', 'S3 Logging', 'Logging Best Practices'], deps: ['t11'], tips: 'CloudTrail records API calls, management/data events', docs: [{ title: 'AWS CloudTrail', url: 'https://docs.aws.amazon.com/cloudtrail/' }, { title: 'CloudTrail User Guide', url: 'https://docs.aws.amazon.com/awscloudtrail/latest/userguide/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>CloudTrail Events</h4><p>Records API calls with timestamps and user info</p></div><div class="concept-card"><h4>Event Types</h4><p>Management, data, and CloudTrail Insights</p></div><div class="concept-card"><h4>Trail Configuration</h4><p>Single/multi-account, log validation</p></div><div class="concept-card"><h4>Compliance</h4><p>For forensics and access monitoring</p></div></div>` },
+  { id: 't25', phase: 'p5', cat: 'integ', title: 'API Gateway & RESTful APIs', desc: 'Creating and managing RESTful APIs for integrating with services', tags: ['integração', 'api'], weight: 2, services: ['Amazon API Gateway', 'REST APIs', 'WebSocket APIs', 'API Gateway Caching'], deps: ['t9'], tips: 'Understand stages, authorizers, throttling, integration types', docs: [{ title: 'Amazon API Gateway', url: 'https://docs.aws.amazon.com/apigateway/' }, { title: 'API Gateway Developer Guide', url: 'https://docs.aws.amazon.com/apigateway/latest/developerguide/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>API Gateway</h4><p>Front door for applications</p></div><div class="concept-card"><h4>Integration Types</h4><p>AWS services, HTTP endpoints, proxies</p></div><div class="concept-card"><h4>Authorization</h4><p>API keys, IAM, Cognito, Lambda authorizers</p></div><div class="concept-card"><h4>Performance</h4><p>Caching, throttling, and transformations</p></div></div>` },
+  { id: 't26', phase: 'p5', cat: 'integ', title: 'Amazon EventBridge & Event-Driven', desc: 'Event bus service for event-driven architectures', tags: ['eventos', 'integração'], weight: 2, services: ['Amazon EventBridge', 'Event Rules', 'Event Buses', 'Cross-Account Events'], deps: ['t22'], tips: 'EventBridge routes events using pattern-based rules', docs: [{ title: 'Amazon EventBridge', url: 'https://docs.aws.amazon.com/eventbridge/' }, { title: 'EventBridge User Guide', url: 'https://docs.aws.amazon.com/eventbridge/latest/userguide/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>Event Bus</h4><p>Default and custom event buses</p></div><div class="concept-card"><h4>Sources & Targets</h4><p>Route from AWS services to destinations</p></div><div class="concept-card"><h4>Pattern Matching</h4><p>Filter using JSON patterns</p></div><div class="concept-card"><h4>Cross-Account</h4><p>Share buses across accounts</p></div></div>` },
+  { id: 't27', phase: 'p6', cat: 'cost', title: 'Cost Optimization Strategies', desc: 'Advanced techniques for reducing AWS costs', tags: ['custos', 'otimização'], weight: 3, services: ['Reserved Instances', 'Spot Instances', 'Savings Plans', 'Cost Explorer'], deps: ['t3'], tips: 'Master RIs, Savings Plans, Spot, right-sizing, automation', docs: [{ title: 'AWS Cost Optimization', url: 'https://aws.amazon.com/architecture/cost-optimization/' }, { title: 'Cost Explorer Guide', url: 'https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/ce-what-is.html' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>Reserved Capacity</h4><p>Reserve resources for significant discounts</p></div><div class="concept-card"><h4>Spot Instances</h4><p>Spare capacity at up to 90% discount</p></div><div class="concept-card"><h4>Savings Plans</h4><p>Flexible commitments with higher discounts</p></div><div class="concept-card"><h4>Optimization</h4><p>Regular reviews and automation</p></div></div>` },
+  { id: 't28', phase: 'p6', cat: 'gov', title: 'Governance & Compliance', desc: 'Implementing policies and governance frameworks for AWS', tags: ['governança', 'compliance'], weight: 2, services: ['AWS Config', 'AWS Organizations', 'AWS Compliance Center', 'Service Control Policies'], deps: ['t18'], tips: 'AWS Config for compliance, Organizations for multi-account, SCPs for enforcement', docs: [{ title: 'AWS Config', url: 'https://docs.aws.amazon.com/config/' }, { title: 'AWS Organizations', url: 'https://docs.aws.amazon.com/organizations/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>AWS Config</h4><p>Monitor and record configuration changes</p></div><div class="concept-card"><h4>Organizations</h4><p>Manage multiple accounts with SCPs</p></div><div class="concept-card"><h4>Service Control Policies</h4><p>Enforce permissions across accounts</p></div><div class="concept-card"><h4>Compliance</h4><p>Built-in frameworks and Trusted Advisor</p></div></div>` },
+  { id: 't29', phase: 'p6', cat: 'arch', title: 'Disaster Recovery & Business Continuity', desc: 'Planning and implementing disaster recovery strategies', tags: ['recuperação', 'continuidade'], weight: 3, services: ['AWS Backup', 'AWS DMS', 'Route 53', 'Multi-Region Architecture'], deps: ['t4', 't13'], tips: 'Master RTO, RPO, backup/restore, pilot light, warm/hot standby', docs: [{ title: 'Disaster Recovery', url: 'https://aws.amazon.com/disaster-recovery/' }, { title: 'AWS Backup', url: 'https://docs.aws.amazon.com/aws-backup/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>DR Strategies</h4><p>Backup, Pilot Light, Warm, Hot standby</p></div><div class="concept-card"><h4>RTO & RPO</h4><p>Define recovery objectives</p></div><div class="concept-card"><h4>Multi-Region</h4><p>Active-active and active-passive</p></div><div class="concept-card"><h4>Automation</h4><p>Automated recovery and testing</p></div></div>` },
+  { id: 't30', phase: 'p6', cat: 'gov', title: 'AWS Backup & Data Protection', desc: 'Centralized backup solution protecting data across AWS services', tags: ['backup', 'proteção'], weight: 2, services: ['AWS Backup', 'Cross-Region Backup', 'Backup Compliance', 'AWS DataSync'], deps: ['t12', 't13', 't11'], tips: 'Understand backup plans, retention, cross-region/account capabilities', docs: [{ title: 'AWS Backup', url: 'https://docs.aws.amazon.com/aws-backup/' }, { title: 'AWS Backup Developer Guide', url: 'https://docs.aws.amazon.com/aws-backup/latest/devguide/' }], explained: `<div class="detail-concepts"><div class="concept-card"><h4>Backup Plans</h4><p>Automatic scheduling and resource assignment</p></div><div class="concept-card"><h4>Supported Services</h4><p>EBS, RDS, DynamoDB, S3, EFS, FSx</p></div><div class="concept-card"><h4>Retention</h4><p>Retention policies and WORM for compliance</p></div><div class="concept-card"><h4>Cross-Region</h4><p>Replicate across regions and accounts</p></div></div>` }
+];
+
+// ============================================================
+//  STATE & STORAGE
+// ============================================================
+let done = {};
+let allQuestions = [...initialQuestions];
+
+async function loadState() {
+  const stored = await window.storage.get('mapState');
+  if (!stored) return;
+  
+  const state = JSON.parse(stored.value);
+  if (state.done) Object.assign(done, state.done);
+  if (state.questions) {
+    allQuestions = state.questions;
+  }
+  updateProgress();
+}
+
+async function saveState() {
+  const state = {
+    done: done,
+    questions: allQuestions
+  };
+  await window.storage.set('mapState', JSON.stringify(state));
+}
+
+// ============================================================
+//  UI RENDERING
+// ============================================================
+function renderLegend() {
+  const legend = document.getElementById('legend');
+  legend.innerHTML = Object.entries(categories).map(([key, cat]) => `
+    <div class="legend-item active" data-cat="${key}" onclick="toggleCat('${key}')" title="Clique para filtrar">
+      <div class="legend-dot" style="background: ${cat.color}"></div>
+      <span>${cat.label}</span>
+    </div>
+  `).join('');
+}
+
+function renderPhases() {
+  const main = document.getElementById('main');
+  main.innerHTML = phases.map(phase => {
+    const phaseTopics = topics.filter(t => t.phase === phase.id);
+    return `
+      <div class="phase">
+        <div class="phase-header">
+          <div class="phase-number">${phase.id.substring(1)}</div>
+          <h2 class="phase-title">${phase.title}</h2>
+          <div class="phase-line"></div>
+        </div>
+        <div class="cards">
+          ${phaseTopics.map(topic => {
+            const cat = categories[topic.cat];
+            const isDone = !!done[topic.id];
+            return `
+              <div class="card ${isDone ? 'done' : ''}" style="--cat-color: ${cat.color}">
+                <div class="card-top" onclick="goToDetail('${topic.id}')">
+                  <div class="card-icon">${cat.icon}</div>
+                  <div class="card-info">
+                    <div class="card-title">${topic.title}</div>
+                    <div class="card-desc">${topic.desc}</div>
+                  </div>
+                </div>
+                <button class="btn-toggle ${isDone ? 'done' : ''}" onclick="toggleDone('${topic.id}')">${isDone ? '✓ Feito' : 'Marcar'}</button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+  updateProgress();
+}
+
+function toggleDone(topicId) {
+  done[topicId] = !done[topicId];
+  saveState();
+  renderPhases();
+}
+
+function updateProgress() {
+  const total = topics.length;
+  const completed = Object.keys(done).length;
+  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+  
+  document.getElementById('done-count').textContent = completed;
+  document.getElementById('prog-pct').textContent = pct + '%';
+  document.getElementById('prog-fill').style.width = pct + '%';
+}
+
+function toggleCat(cat) {
+  // Pode implementar filtragem por categoria aqui
+}
+
+// ============================================================
+//  DETAIL PAGE
+// ============================================================
+function goToDetail(topicId) {
+  const topic = topics.find(t => t.id === topicId);
+  if (!topic) return;
+  
+  document.getElementById('main').classList.add('hidden');
+  document.getElementById('detailPage').classList.add('show');
+  renderDetailPage(topic);
+}
+
+function goBackToGrid() {
+  document.getElementById('main').classList.remove('hidden');
+  document.getElementById('detailPage').classList.remove('show');
+}
+
+function renderDetailPage(topic) {
+  const cat = categories[topic.cat];
+  const isDone = !!done[topic.id];
+  const topicQuestions = allQuestions.filter(q => q.tags.includes(topic.id));
+  
+  const detailPage = document.getElementById('detailPage');
+  detailPage.innerHTML = '';
+  
+  const overviewHTML = `
+    <div class="detail-section">
+      <h3>📋 Resumo</h3>
+      <p>${topic.desc}</p>
+      <div class="exp-section" style="margin-top: 16px;">
+        <div class="exp-label">💡 Dica de Estudo</div>
+        <p style="color: var(--text); font-size: 11px; line-height: 1.6;">${topic.tips}</p>
+      </div>
+      ${topic.services && topic.services.length ? `
+        <div class="exp-section">
+          <div class="exp-label">⚙️ Serviços Principais</div>
+          <div class="exp-services-list">
+            ${topic.services.map(s => `<span class="service-item">${s}</span>`).join('')}
+          </div>
+        </div>
+      ` : ''}
+      ${topic.tags && topic.tags.length ? `
+        <div class="exp-section">
+          <div class="exp-label">🏷️ Tags</div>
+          <div class="exp-tags">
+            ${topic.tags.map(t => `<span class="exp-tag">${t}</span>`).join('')}
+          </div>
+        </div>
+      ` : ''}
+      <div class="exp-section">
+        <div class="exp-label">⭐ Importância</div>
+        <div class="exp-weight">
+          ${[...Array(3)].map((_, i) => `<div class="weight-dot ${i < topic.weight ? 'filled' : ''}"></div>`).join('')}
+          <span style="margin-left: 8px; color: var(--text); font-size: 10px;">${topic.weight}/3</span>
+        </div>
+      </div>
+    </div>
+    <div class="detail-section">
+      ${topic.explained || '<p>Conceitos em desenvolvimento...</p>'}
+    </div>
+  `;
+  
+  const conceptsHTML = `
+    <div class="detail-section">
+      ${topic.explained || '<p>Conceitos em desenvolvimento...</p>'}
+    </div>
+  `;
+  
+  let questionsHTML = topicQuestions.length === 0 
+    ? '<div class="detail-section"><p style="text-align:center; color:var(--muted);">Nenhuma pergunta cadastrada.</p></div>'
+    : `<div class="detail-section">
+        ${topicQuestions.map((q, i) => `
+          <div class="q-item" style="margin-bottom: 12px;">
+            <div class="q-item-head" onclick="toggleQ('${q.id}')">
+              <span class="q-num">${i+1}.</span>
+              <span class="q-text">${q.question}</span>
+              <span class="q-arrow">▶</span>
+            </div>
+            <div class="q-answer">${q.answer || 'Sem resposta'}</div>
+          </div>
+        `).join('')}
+        <button class="btn-add-q" onclick="openModal('${topic.id}')" style="width:100%; margin-top:12px">+ Adicionar Pergunta</button>
+      </div>`;
+  
+  let resourcesHTML = topic.docs && topic.docs.length
+    ? `<div class="detail-section">
+        <h3>📚 Documentação Oficial</h3>
+        <div style="display: grid; gap: 12px;">
+          ${topic.docs.map(doc => `
+            <a href="${doc.url}" target="_blank" style="display: block; padding: 12px; background: var(--surface); border-radius: 4px; text-decoration: none; color: var(--aws); border-left: 4px solid var(--aws); transition: transform 0.2s;">
+              <strong>${doc.title}</strong>
+              <div style="font-size: 9px; color: var(--muted); margin-top: 4px;">🔗 Abrir em nova aba</div>
+            </a>
+          `).join('')}
+        </div>
+      </div>`
+    : '';
+  
+  detailPage.innerHTML = `
+    <div class="detail-header">
+      <button class="detail-back-btn" onclick="goBackToGrid()" title="Voltar">← Voltar</button>
+      <div class="detail-title-section">
+        <span class="detail-icon">${cat.icon}</span>
+        <div>
+          <h2 class="detail-title">${topic.title}</h2>
+          <div class="detail-subtitle">${topic.phase} • ${cat.label}</div>
+        </div>
+      </div>
+      <button class="btn-toggle ${isDone ? 'done' : ''}" style="align-self: flex-start;" onclick="toggleDone('${topic.id}'); goBackToGrid();">${isDone ? '✓ Feito' : 'Marcar'}</button>
+    </div>
+    
+    <div class="detail-tabs">
+      <button class="detail-tab active" data-tab="overview" onclick="switchTab('overview')">📖 Resumo</button>
+      <button class="detail-tab" data-tab="concepts" onclick="switchTab('concepts')">💡 Conceitos</button>
+      <button class="detail-tab" data-tab="questions" onclick="switchTab('questions')">❓ Perguntas (${topicQuestions.length})</button>
+      ${resourcesHTML ? '<button class="detail-tab" data-tab="resources" onclick="switchTab(\'resources\');">📚 Recursos</button>' : ''}
+    </div>
+    
+    <div class="detail-content">
+      <div class="detail-content-tab" id="tab-overview">${overviewHTML}</div>
+      <div class="detail-content-tab hidden" id="tab-concepts">${conceptsHTML}</div>
+      <div class="detail-content-tab hidden" id="tab-questions">${questionsHTML}</div>
+      ${resourcesHTML ? `<div class="detail-content-tab hidden" id="tab-resources">${resourcesHTML}</div>` : ''}
+    </div>
+  `;
+}
+
+function switchTab(tabName) {
+  document.querySelectorAll('.detail-tab').forEach(tab => {
+    tab.classList.remove('active');
+    if (tab.dataset.tab === tabName) tab.classList.add('active');
+  });
+  
+  document.querySelectorAll('.detail-content-tab').forEach(content => {
+    content.classList.add('hidden');
+  });
+  
+  const activeContent = document.getElementById('tab-' + tabName);
+  if (activeContent) activeContent.classList.remove('hidden');
+}
+
+// ============================================================
+//  MODAL & QUESTIONS
+// ============================================================
+function openModal(topicId) {
+  document.getElementById('modalOverlay').classList.add('open');
+  currentModalTopic = topicId;
+  
+  const tagGrid = document.getElementById('tagGrid');
+  tagGrid.innerHTML = topics.map(t => `
+    <button class="tag-sel" data-topic="${t.id}" onclick="toggleTag('${t.id}')">${t.id}</button>
+  `).join('');
+}
+
+function closeModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.getElementById('qText').value = '';
+  document.getElementById('qAnswer').value = '';
+}
+
+let currentModalTopic = null;
+
+function toggleTag(topicId) {
+  const btn = document.querySelector(`[data-topic="${topicId}"]`);
+  btn.classList.toggle('selected');
+}
+
+function saveQuestion() {
+  const text = document.getElementById('qText').value.trim();
+  const answer = document.getElementById('qAnswer').value.trim();
+  const tags = Array.from(document.querySelectorAll('.tag-sel.selected')).map(btn => btn.dataset.topic);
+  
+  if (!text || !answer || tags.length === 0) {
+    alert('Preencha pergunta, resposta e selecione pelo menos 1 tópico.');
+    return;
+  }
+  
+  const q = {
+    id: 'q-' + Date.now(),
+    question: text,
+    answer: answer,
+    tags: tags,
+    createdAt: new Date().toISOString()
+  };
+  
+  allQuestions.push(q);
+  saveState();
+  closeModal();
+  renderDetailPage(topics.find(t => t.id === currentModalTopic));
+  showNotif('✓ Pergunta salva!');
+}
+
+function toggleQ(qId) {
+  const item = document.querySelector(`[onclick*="${qId}"]`).closest('.q-item');
+  item.classList.toggle('open');
+}
+
+function showNotif(msg) {
+  const n = document.getElementById('notif');
+  n.textContent = msg;
+  n.classList.add('show');
+  setTimeout(() => n.classList.remove('show'), 2200);
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+async function init() {
+  await loadState();
+  renderLegend();
+  renderPhases();
+}
+
+init();
+</script>
+</body>
+</html>

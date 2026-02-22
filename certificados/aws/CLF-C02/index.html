@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Cloud Practitioner — Mapa de Estudo</title>
+<link rel="stylesheet" href="../../../assets/css/main.css">
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">
+      <span class="aws-badge">AWS</span>
+      <h1>Cloud <span>Practitioner</span></h1>
+    </div>
+    <p class="subtitle">// mapa de dependências de estudo · CLF-C02 · v2</p>
+  </div>
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-number" id="total-count">24</div>
+      <div class="stat-label">Tópicos</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number" id="done-count">0</div>
+      <div class="stat-label">Concluídos</div>
+    </div>
+  </div>
+</header>
+
+<div class="progress-bar">
+  <span class="progress-label">PROGRESSO GERAL</span>
+  <div class="bar-track"><div class="bar-fill" id="prog-fill"></div></div>
+  <span class="progress-count" id="prog-pct">0%</span>
+</div>
+
+<div class="legend" id="legend"></div>
+
+<main id="main"></main>
+
+<div class="detail-page" id="detailPage"></div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h2 class="modal-title">＋ Nova <span>Pergunta</span></h2>
+    <div class="field">
+      <label>Texto da Pergunta</label>
+      <textarea id="qText" placeholder="Digite a pergunta aqui..."></textarea>
+    </div>
+    <div class="field">
+      <label>Resposta</label>
+      <textarea id="qAnswer" placeholder="Digite a resposta aqui..."></textarea>
+    </div>
+    <div class="field">
+      <label>Tópicos Relacionados</label>
+      <div class="tag-select-grid" id="tagGrid"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveQuestion()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="notif" id="notif"></div>
+
+<script>
+window.storage = {
+  get: async (key) => { const value = localStorage.getItem(key); return value ? { value } : null; },
+  set: async (key, value) => { localStorage.setItem(key, value); }
+};
+
+const categories = {
+  fund:  { label: 'Fundamentos Cloud', color: '#6366f1', icon: '☁️' },
+  comp:  { label: 'Computação', color: '#06b6d4', icon: '⚡' },
+  store: { label: 'Armazenamento', color: '#10b981', icon: '🗄️' },
+  net:   { label: 'Rede', color: '#f59e0b', icon: '🌐' },
+  sec:   { label: 'Segurança', color: '#ec4899', icon: '🔒' },
+  db:    { label: 'Bancos de Dados', color: '#8b5cf6', icon: '🗃️' },
+  mon:   { label: 'Monitoramento', color: '#14b8a6', icon: '📊' },
+  bill:  { label: 'Billing & Suporte', color: '#f97316', icon: '💰' },
+};
+
+const initialQuestions = [
+  { id: 'q-1', question: 'Para manter a infraestrutura elástica, quais serviços?', answer: 'ASG e ELB', tags: ['t4', 't6'], createdAt: new Date().toISOString() },
+  { id: 'q-2', question: 'Banco de dados de grafos totalmentegerenciado?', answer: 'Amazon Neptune', tags: ['t10'], createdAt: new Date().toISOString() },
+];
+
+const phases = [
+  { id: 'p1', title: 'Fase 1 — Fundamentos' },
+  { id: 'p2', title: 'Fase 2 — Computação & Rede' },
+  { id: 'p3', title: 'Fase 3 — Armazenamento & BD' },
+  { id: 'p4', title: 'Fase 4 — Segurança' },
+  { id: 'p5', title: 'Fase 5 — Monitoramento & IA' },
+  { id: 'p6', title: 'Fase 6 — Billing & Suporte' },
+];
+
+const topics = [
+  { id: 't1', phase: 'p1', cat: 'fund', title: 'Cloud Computing', desc: 'IaaS, PaaS, SaaS', tags: ['conceitual'], weight: 3, services: [], deps: [], tips: 'Base fundamental.', docs: [{ title: 'Cloud Computing', url: 'https://aws.amazon.com/cloud/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>IaaS</h4><p>Infrastructure as a Service</p></div><div class="concept-card"><h4>PaaS</h4><p>Platform as a Service</p></div><div class="concept-card"><h4>SaaS</h4><p>Software as a Service</p></div></div>' },
+  { id: 't2', phase: 'p1', cat: 'fund', title: 'Infraestrutura Global', desc: 'Regiões e AZs', tags: ['geográfico'], weight: 3, services: [], deps: ['t1'], tips: 'Saiba as regiões e AZs', docs: [{ title: 'Global Infrastructure', url: 'https://aws.amazon.com/about-aws/global-infrastructure/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>Regiões</h4><p>Agrupamentos geográficos</p></div><div class="concept-card"><h4>AZs</h4><p>Data centers</p></div></div>' },
+  { id: 't3', phase: 'p1', cat: 'fund', title: 'Responsabilidade Compartilhada', desc: 'AWS vs Cliente', tags: ['segurança'], weight: 3, services: [], deps: ['t1'], tips: 'Cai no exame!', docs: [{ title: 'Shared Responsibility', url: 'https://aws.amazon.com/compliance/shared-responsibility-model/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>AWS</h4><p>Infraestrutura</p></div><div class="concept-card"><h4>Cliente</h4><p>Dados, aplicações</p></div></div>' },
+  { id: 't4', phase: 'p2', cat: 'comp', title: 'EC2', desc: 'Máquinas virtuais', tags: ['compute'], weight: 3, services: ['EC2'], deps: ['t1', 't2'], tips: 'On-Demand, Reserved, Spot', docs: [{ title: 'EC2', url: 'https://docs.aws.amazon.com/ec2/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>Tipos</h4><p>General, Compute, Memory</p></div></div>' },
+  { id: 't5', phase: 'p2', cat: 'comp', title: 'Lambda', desc: 'Serverless', tags: ['serverless'], weight: 2, services: ['Lambda'], deps: ['t4'], tips: 'Pague por execução', docs: [{ title: 'Lambda', url: 'https://docs.aws.amazon.com/lambda/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>Serverless</h4><p>AWS gerencia</p></div></div>' },
+  { id: 't6', phase: 'p2', cat: 'net', title: 'VPC & Rede', desc: 'Rede virtual isolada', tags: ['rede'], weight: 3, services: ['VPC'], deps: ['t1', 't2'], tips: 'Entenda subnets', docs: [{ title: 'VPC', url: 'https://docs.aws.amazon.com/vpc/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>VPC</h4><p>Rede isolada</p></div></div>' },
+  { id: 't7', phase: 'p3', cat: 'store', title: 'S3', desc: 'Object storage', tags: ['storage'], weight: 2, services: ['S3'], deps: ['t1'], tips: '11 noves de durabilidade', docs: [{ title: 'S3', url: 'https://docs.aws.amazon.com/s3/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>Classes</h4><p>Standard, IA, Glacier</p></div></div>' },
+  { id: 't8', phase: 'p3', cat: 'store', title: 'EBS, EFS', desc: 'Block e file storage', tags: ['storage'], weight: 2, services: ['EBS', 'EFS'], deps: ['t4'], tips: 'EBS=bloco, EFS=compartilhado', docs: [{ title: 'EBS', url: 'https://docs.aws.amazon.com/ebs/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>EBS</h4><p>Volume para EC2</p></div><div class="concept-card"><h4>EFS</h4><p>NFS compartilhado</p></div></div>' },
+  { id: 't9', phase: 'p3', cat: 'db', title: 'RDS & Aurora', desc: 'BD relacional', tags: ['database'], weight: 2, services: ['RDS'], deps: ['t1'], tips: 'Multi-AZ e Read Replicas', docs: [{ title: 'RDS', url: 'https://docs.aws.amazon.com/rds/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>Motores</h4><p>MySQL, PostgreSQL</p></div></div>' },
+  { id: 't10', phase: 'p3', cat: 'db', title: 'DynamoDB', desc: 'NoSQL gerenciado', tags: ['database'], weight: 2, services: ['DynamoDB'], deps: ['t1'], tips: 'Key-value escalável', docs: [{ title: 'DynamoDB', url: 'https://docs.aws.amazon.com/dynamodb/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>NoSQL</h4><p>Sem schema rígido</p></div></div>' },
+  { id: 't11', phase: 'p4', cat: 'sec', title: 'IAM', desc: 'Identity & Access Management', tags: ['segurança'], weight: 3, services: ['IAM'], deps: ['t1'], tips: 'Users, Roles, Policies', docs: [{ title: 'IAM', url: 'https://docs.aws.amazon.com/iam/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>Estrutura</h4><p>Users, Groups, Roles</p></div></div>' },
+  { id: 't12', phase: 'p4', cat: 'sec', title: 'Segurança AWS', desc: 'Shield, WAF, GuardDuty', tags: ['segurança'], weight: 2, services: ['Shield', 'WAF'], deps: ['t11'], tips: 'Shield DDoS, WAF Web', docs: [{ title: 'Security', url: 'https://docs.aws.amazon.com/security/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>Shield</h4><p>Proteção DDoS</p></div><div class="concept-card"><h4>WAF</h4><p>Web Firewall</p></div></div>' },
+  { id: 't13', phase: 'p5', cat: 'mon', title: 'CloudWatch', desc: 'Monitoramento', tags: ['monitoramento'], weight: 3, services: ['CloudWatch'], deps: ['t4'], tips: 'Métricas, logs, alarms', docs: [{ title: 'CloudWatch', url: 'https://docs.aws.amazon.com/cloudwatch/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>Métricas</h4><p>CPU, rede, storage</p></div></div>' },
+  { id: 't14', phase: 'p5', cat: 'mon', title: 'CloudTrail', desc: 'Auditoria de APIs', tags: ['auditoria'], weight: 2, services: ['CloudTrail'], deps: ['t13'], tips: 'Quem fez o quê', docs: [{ title: 'CloudTrail', url: 'https://docs.aws.amazon.com/cloudtrail/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>API Log</h4><p>Todas as chamadas</p></div></div>' },
+  { id: 't15', phase: 'p5', cat: 'comp', title: 'IA & ML', desc: 'Rekognition, SageMaker', tags: ['ai'], weight: 1, services: ['SageMaker'], deps: ['t1'], tips: 'Saber o que faz', docs: [{ title: 'ML Services', url: 'https://aws.amazon.com/machine-learning/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>Services</h4><p>Rekognition, Comprehend</p></div></div>' },
+  { id: 't16', phase: 'p6', cat: 'bill', title: 'Preços & Billing', desc: 'Modelos de preço', tags: ['billing'], weight: 3, services: [], deps: ['t1'], tips: 'On-Demand, Reserved, Spot', docs: [{ title: 'Pricing', url: 'https://aws.amazon.com/pricing/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>On-Demand</h4><p>Por hora</p></div><div class="concept-card"><h4>Reserved</h4><p>1-3 anos, 40-60% desc</p></div><div class="concept-card"><h4>Spot</h4><p>Até 90% desc</p></div></div>' },
+  { id: 't17', phase: 'p6', cat: 'bill', title: 'Suporte AWS', desc: 'Planos de suporte', tags: ['suporte'], weight: 3, services: [], deps: [], tips: 'Decore SLAs', docs: [{ title: 'Support Plans', url: 'https://aws.amazon.com/premiumsupport/plans/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>Basic, Developer</h4><p>Sem e com suporte</p></div><div class="concept-card"><h4>Business, Enterprise</h4><p>Telefone e TAM</p></div></div>' },
+  { id: 't18', phase: 'p2', cat: 'comp', title: 'Load Balancing', desc: 'ALB, NLB', tags: ['performance'], weight: 2, services: ['ELB'], deps: ['t4', 't6'], tips: 'ALB L7, NLB L4', docs: [{ title: 'ELB', url: 'https://docs.aws.amazon.com/elasticloadbalancing/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>ALB</h4><p>Layer 7</p></div><div class="concept-card"><h4>NLB</h4><p>Layer 4</p></div></div>' },
+  { id: 't19', phase: 'p3', cat: 'store', title: 'Backup & DR', desc: 'RTO, RPO', tags: ['recuperação'], weight: 2, services: [], deps: ['t7', 't9'], tips: 'Planejar recovery', docs: [{ title: 'Backup', url: 'https://aws.amazon.com/aws-backup/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>RTO</h4><p>Recovery Time</p></div><div class="concept-card"><h4>RPO</h4><p>Recovery Point</p></div></div>' },
+  { id: 't20', phase: 'p4', cat: 'net', title: 'Conectividade Híbrida', desc: 'VPN, Direct Connect', tags: ['rede'], weight: 2, services: [], deps: ['t6'], tips: 'VPN encrypted, DC dedicado', docs: [{ title: 'VPN', url: 'https://docs.aws.amazon.com/vpn/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>VPN</h4><p>Encrypted</p></div><div class="concept-card"><h4>Direct Connect</h4><p>Dedicated</p></div></div>' },
+  { id: 't21', phase: 'p3', cat: 'db', title: 'Auto Scaling', desc: 'Escalabilidade automática', tags: ['escalabilidade'], weight: 2, services: ['ASG'], deps: ['t4'], tips: 'Target tracking', docs: [{ title: 'ASG', url: 'https://docs.aws.amazon.com/autoscaling/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>ASG</h4><p>Auto Scaling Groups</p></div></div>' },
+  { id: 't22', phase: 'p5', cat: 'comp', title: 'SQS, SNS, EventBridge', desc: 'Messaging', tags: ['integração'], weight: 2, services: ['SQS', 'SNS'], deps: ['t4'], tips: 'SQS fila, SNS pub/sub', docs: [{ title: 'SQS', url: 'https://docs.aws.amazon.com/sqs/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>SQS</h4><p>Message Queue</p></div><div class="concept-card"><h4>SNS</h4><p>Pub/Sub</p></div></div>' },
+  { id: 't23', phase: 'p6', cat: 'bill', title: 'Conformidade', desc: 'Compliance, regulations', tags: ['compliance'], weight: 2, services: [], deps: ['t11'], tips: 'HIPAA, PCI-DSS, SOC 2', docs: [{ title: 'Compliance', url: 'https://aws.amazon.com/compliance/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>Config</h4><p>Configuration compliance</p></div></div>' },
+  { id: 't24', phase: 'p6', cat: 'bill', title: 'Well-Architected', desc: 'Trusted Advisor', tags: ['arquitetura'], weight: 2, services: [], deps: ['t13'], tips: '6 pilares', docs: [{ title: 'Well-Architected', url: 'https://aws.amazon.com/architecture/well-architected/' }], explained: '<div class="detail-concepts"><div class="concept-card"><h4>Pillars</h4><p>6 pilares de design</p></div></div>' },
+];
+
+let done = new Set(), questions = [], modalSelectedTags = new Set();
+
+async function loadState() {
+  try { const d = await window.storage.get('aws-clf-done'); if (d) done = new Set(JSON.parse(d.value)); } catch(e) {}
+  try { const q = await window.storage.get('aws-clf-questions'); if (q) questions = JSON.parse(q.value); else { questions = [...initialQuestions]; await saveQuestions(); } } catch(e) {}
+}
+
+async function saveState() { try { await window.storage.set('aws-clf-done', JSON.stringify([...done])); } catch(e) {} }
+
+async function saveQuestions() { try { await window.storage.set('aws-clf-questions', JSON.stringify(questions)); } catch(e) {} }
+
+function renderLegend() {
+  const legend = document.getElementById('legend');
+  legend.innerHTML = Object.entries(categories).map(([key, cat]) => `<div class="legend-item"><div class="legend-dot" style="background-color:${cat.color}"></div><span>${cat.label}</span></div>`).join('');
+}
+
+function renderPhases() {
+  const total = topics.length, doneCount = [...done].filter(id => topics.find(t => t.id === id)).length;
+  document.getElementById('done-count').textContent = doneCount;
+  document.getElementById('total-count').textContent = total;
+  const pct = total ? Math.round(doneCount / total * 100) : 0;
+  document.getElementById('prog-pct').textContent = pct + '%';
+  document.getElementById('prog-fill').style.width = pct + '%';
+
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+
+  phases.forEach(phase => {
+    const phaseTopics = topics.filter(t => t.phase === phase.id);
+    if (!phaseTopics.length) return;
+
+    const phaseEl = document.createElement('div');
+    phaseEl.className = 'phase';
+    phaseEl.innerHTML = `<div class="phase-header"><div class="phase-number">${phase.id.replace('p', '')}</div><h2 class="phase-title">${phase.title}</h2><div class="phase-line"></div></div>`;
+
+    const cardsDiv = document.createElement('div');
+    cardsDiv.className = 'cards';
+    
+    phaseTopics.forEach(topic => {
+      const cat = categories[topic.cat], isDone = done.has(topic.id);
+      const card = document.createElement('div');
+      card.className = 'card' + (isDone ? ' done' : '');
+      card.style.setProperty('--cat-color', cat.color);
+
+      card.innerHTML = `<div class="card-top"><div class="card-icon">${cat.icon}</div><div class="card-info"><div class="card-title">${topic.title}</div><div class="card-desc">${topic.desc}</div></div></div><div class="q-section"><div class="exp-section"><div class="exp-label">💡 Dica</div><p style="font-size: 10px; color: var(--text); margin: 4px 0;">${topic.tips}</p></div><button class="btn-detail" onclick="goToDetail('${topic.id}'); event.stopPropagation()" style="width: 100%; margin-top: 8px; margin-bottom: 4px;">📖 Detalhes</button><button class="btn-toggle ${isDone ? 'done' : ''}" onclick="toggleDone('${topic.id}'); event.stopPropagation()" style="width: 100%;">${isDone ? '✓ Feito' : 'Marcar'}</button></div>`;
+
+      cardsDiv.appendChild(card);
+    });
+
+    cardsDiv.addEventListener('click', (e) => {
+      const cardTop = e.target.closest('.card-top');
+      if (cardTop) { const qs = cardTop.closest('.card')?.querySelector('.q-section'); if (qs) qs.classList.toggle('show'); }
+    });
+
+    phaseEl.appendChild(cardsDiv);
+    main.appendChild(phaseEl);
+  });
+}
+
+function toggleDone(id) { if (done.has(id)) done.delete(id); else done.add(id); saveState(); renderPhases(); }
+
+function goToDetail(topicId) {
+  const topic = topics.find(t => t.id === topicId);
+  if (!topic) return;
+  renderDetailPage(topic);
+  document.getElementById('main').classList.add('hidden');
+  document.getElementById('detailPage').classList.add('show');
+}
+
+function goBackToGrid() {
+  document.getElementById('main').classList.remove('hidden');
+  document.getElementById('detailPage').classList.remove('show');
+}
+
+function renderDetailPage(topic) {
+  const detailPage = document.getElementById('detailPage');
+  const cat = categories[topic.cat];
+  const isDone = done.has(topic.id);
+  const topicQuestions = questions.filter(q => q.tags.includes(topic.id));
+  
+  detailPage.innerHTML = `<div class="detail-header"><button class="detail-back-btn" onclick="goBackToGrid()">← Voltar</button><div class="detail-title-section"><h2>${topic.title}</h2><div class="detail-subtitle">${topic.phase} • ${cat.label}</div></div><button class="btn-toggle ${isDone ? 'done' : ''}" onclick="toggleDone('${topic.id}'); goBackToGrid();">${isDone ? '✓ Feito' : 'Marcar'}</button></div><div class="detail-tabs"><button class="detail-tab active" onclick="switchTab('overview')">📖 Resumo</button><button class="detail-tab" onclick="switchTab('concepts')">💡 Conceitos</button><button class="detail-tab" onclick="switchTab('questions')">❓ Q&A (${topicQuestions.length})</button>${topic.docs?.length ? '<button class="detail-tab" onclick="switchTab(\'resources\')">📚 Recursos</button>' : ''}</div><div class="detail-content"><div class="detail-content-tab" id="tab-overview"><div class="detail-section"><h3>${topic.title}</h3><p>${topic.desc}</p><div style="margin-top: 16px; padding: 12px; background: rgba(255,153,0,0.1); border-left: 4px solid var(--aws); border-radius: 4px;"><p><strong>💡 Dica:</strong> ${topic.tips}</p></div>${topic.services?.length ? `<div style="margin-top: 16px;"><h4 style="font-size: 12px; color: var(--aws); margin-bottom: 8px;">⚙️ Serviços</h4><div class="exp-services-list">${topic.services.map(s => `<div class="service-item">${s}</div>`).join('')}</div></div>` : ''}</div></div><div class="detail-content-tab hidden" id="tab-concepts"><div class="detail-section">${topic.explained || '<p>Conceitos em desenvolvimento...</p>'}</div></div><div class="detail-content-tab hidden" id="tab-questions">${topicQuestions.length === 0 ? '<div class="detail-section"><p style="text-align:center; padding: 32px; color: var(--muted);">Nenhuma pergunta</p></div>' : `<div style="display: flex; flex-direction: column; gap: 12px;">${topicQuestions.map((q, i) => `<div class="q-item"><div class="q-item-head" onclick="toggleQ('${q.id}')"><span class="q-num">${i+1}.</span><span class="q-text">${q.question}</span><span class="q-arrow">▶</span></div><div class="q-answer">${q.answer}</div></div>`).join('')}</div>`}</div>${topic.docs?.length ? `<div class="detail-content-tab hidden" id="tab-resources"><div class="detail-section"><h3>📚 Documentação</h3><div style="display: grid; gap: 12px; margin-top: 12px;">${topic.docs.map(doc => `<a href="${doc.url}" target="_blank" style="padding: 12px; background: var(--surface); border-left: 4px solid var(--aws); border-radius: 4px; text-decoration: none; color: var(--aws); transition: all 0.2s;"><strong>${doc.title}</strong><div style="font-size: 9px; color: var(--muted); margin-top: 4px;">🔗 Abrir em nova aba</div></a>`).join('')}</div></div></div>` : ''}</div>`;
+}
+
+function switchTab(tabName) {
+  document.querySelectorAll('.detail-tab').forEach(tab => tab.classList.remove('active'));
+  const activeBtn = Array.from(document.querySelectorAll('.detail-tab')).find(t => {
+    if (tabName === 'overview') return t.textContent.includes('Resumo');
+    if (tabName === 'concepts') return t.textContent.includes('Conceitos');
+    if (tabName === 'questions') return t.textContent.includes('Q&A');
+    if (tabName === 'resources') return t.textContent.includes('Recursos');
+  });
+  if (activeBtn) activeBtn.classList.add('active');
+  document.querySelectorAll('.detail-content-tab').forEach(c => c.classList.add('hidden'));
+  const tab = document.getElementById('tab-' + tabName);
+  if (tab) tab.classList.remove('hidden');
+}
+
+function toggleQ(qId) {
+  const items = document.querySelectorAll('.q-item');
+  const q = questions.find(q => q.id === qId);
+  items.forEach(item => {
+    if (item.textContent.includes(q?.question)) item.classList.toggle('open');
+    else item.classList.remove('open');
+  });
+}
+
+function openModal(preTagId) {
+  modalSelectedTags = preTagId ? new Set([preTagId]) : new Set();
+  const tagGrid = document.getElementById('tagGrid');
+  tagGrid.innerHTML = topics.map(t => `<button class="tag-sel ${modalSelectedTags.has(t.id) ? 'selected' : ''}" onclick="toggleTag('${t.id}', this); event.stopPropagation()">${t.title}</button>`).join('');
+  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('qText').focus();
+}
+
+function toggleTag(id, el) {
+  if (modalSelectedTags.has(id)) { modalSelectedTags.delete(id); el.classList.remove('selected'); }
+  else { modalSelectedTags.add(id); el.classList.add('selected'); }
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('modalOverlay')) return;
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+async function saveQuestion() {
+  const q = document.getElementById('qText').value.trim();
+  const a = document.getElementById('qAnswer').value.trim();
+  if (!q) return;
+  const newQ = { id: 'q-' + Date.now(), question: q, answer: a, tags: [...modalSelectedTags], createdAt: new Date().toISOString() };
+  questions.push(newQ);
+  await saveQuestions();
+  closeModal();
+  showNotif('✓ Pergunta salva!');
+  renderPhases();
+}
+
+function showNotif(msg) {
+  const n = document.getElementById('notif');
+  n.textContent = msg;
+  n.classList.add('show');
+  setTimeout(() => n.classList.remove('show'), 2200);
+}
+
+async function init() {
+  await loadState();
+  renderLegend();
+  renderPhases();
+}
+
+init();
+</script>
+</body>
+</html>
