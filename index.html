@@ -3,57 +3,131 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AWS — Mapas de Estudo</title>
+  <title>Mapas de Estudo</title>
   <link rel="stylesheet" href="assets/css/main.css">
 </head>
 <body>
 
 <header>
-  <div class="logo-section">
-    <span class="aws-badge">AWS</span>
-  </div>
   <h1><span>Mapas de Estudo</span></h1>
-  <p class="subtitle">Prepare-se para as certificações AWS</p>
+  <p class="subtitle">Prepare-se para as certificações em Cloud</p>
   <p class="description">Escolha a certificação que deseja estudar e acesse o mapa de conhecimentos completo</p>
 </header>
 
 <main>
-  <div class="certs-grid">
-    <!-- CLF-C02 -->
-    <a href="certificados/aws/CLF-C02/index.html" class="cert-card">
-      <div class="cert-icon">☁️</div>
-      <div class="cert-code">CLF-C02</div>
-      <div class="cert-name">Cloud Practitioner</div>
-      <div class="cert-desc">Certificação de entrada para avaliar conhecimentos fundamentais em AWS, serviços em nuvem e arquitetura básica.</div>
-      <div class="cert-topics">
-        <span class="cert-topic-tag">Fundamentos</span>
-        <span class="cert-topic-tag">Serviços AWS</span>
-        <span class="cert-topic-tag">Segurança</span>
-        <span class="cert-topic-tag">Pricing</span>
-      </div>
-      <button class="cert-btn">Começar Estudo →</button>
-    </a>
-
-    <!-- SAA-C03 -->
-    <a href="certificados/aws/SAA-C03/index.html" class="cert-card">
-      <div class="cert-icon">🏗️</div>
-      <div class="cert-code">SAA-C03</div>
-      <div class="cert-name">Solutions Architect Associate</div>
-      <div class="cert-desc">Certificação intermediária para arquitetos de soluções. Valida conhecimento em design de arquiteturas escaláveis e seguras.</div>
-      <div class="cert-topics">
-        <span class="cert-topic-tag">Arquitetura</span>
-        <span class="cert-topic-tag">Design</span>
-        <span class="cert-topic-tag">Alta Disponibilidade</span>
-        <span class="cert-topic-tag">Otimização</span>
-      </div>
-      <button class="cert-btn">Começar Estudo →</button>
-    </a>
+  <!-- Tab Navigation -->
+  <div class="tabs-container">
+    <button class="tab-btn active" data-tab="aws">
+      <span class="tab-icon">☁️</span> AWS
+    </button>
+    <button class="tab-btn" data-tab="databricks">
+      <span class="tab-icon">🧱</span> Databricks
+    </button>
+    <button class="tab-btn" data-tab="nada-aqui">
+      <span class="tab-icon">🚫</span> Nada_Aqui
+    </button>
   </div>
+
+  <!-- AWS Tab Content -->
+  <div class="tab-content active" id="aws-tab">
+    <div class="certs-grid">
+      <!-- CLF-C02 -->
+      <a href="certificados/aws/CLF-C02/index.html" class="cert-card">
+        <div class="cert-icon">☁️</div>
+        <div class="cert-code">CLF-C02</div>
+        <div class="cert-name">Cloud Practitioner</div>
+        <div class="cert-desc">Certificação de entrada para avaliar conhecimentos fundamentais em AWS, serviços em nuvem e arquitetura básica.</div>
+        <div class="cert-topics">
+          <span class="cert-topic-tag">Fundamentos</span>
+          <span class="cert-topic-tag">Serviços AWS</span>
+          <span class="cert-topic-tag">Segurança</span>
+          <span class="cert-topic-tag">Pricing</span>
+        </div>
+        <button class="cert-btn">Começar Estudo →</button>
+      </a>
+
+      <!-- SAA-C03 -->
+      <a href="certificados/aws/SAA-C03/index.html" class="cert-card">
+        <div class="cert-icon">🏗️</div>
+        <div class="cert-code">SAA-C03</div>
+        <div class="cert-name">Solutions Architect Associate</div>
+        <div class="cert-desc">Certificação intermediária para arquitetos de soluções. Valida conhecimento em design de arquiteturas escaláveis e seguras.</div>
+        <div class="cert-topics">
+          <span class="cert-topic-tag">Arquitetura</span>
+          <span class="cert-topic-tag">Design</span>
+          <span class="cert-topic-tag">Alta Disponibilidade</span>
+          <span class="cert-topic-tag">Otimização</span>
+        </div>
+        <button class="cert-btn">Começar Estudo →</button>
+      </a>
+    </div>
+  </div>
+
+  <!-- Databricks Tab Content -->
+  <div class="tab-content" id="databricks-tab">
+    <div class="certs-grid">
+      <!-- Databricks Lakehouse Fundamentals -->
+      <a href="certificados/databricks/index.html" class="cert-card databricks-card">
+        <div class="cert-icon">🧱</div>
+        <div class="cert-code">DLAKEF</div>
+        <div class="cert-name">Lakehouse Fundamentals</div>
+        <div class="cert-desc">Certificação de entrada que valida conhecimentos fundamentais sobre arquitetura Lakehouse, Unity Catalog e processamento de dados com Databricks.</div>
+        <div class="cert-topics">
+          <span class="cert-topic-tag">Lakehouse</span>
+          <span class="cert-topic-tag">Delta Lake</span>
+          <span class="cert-topic-tag">Unity Catalog</span>
+          <span class="cert-topic-tag">Data Engineering</span>
+        </div>
+        <button class="cert-btn">Começar Estudo →</button>
+      </a>
+    </div>
+  </div>
+
+  <!-- Nada Tab Content -->
+  <div class="tab-content" id="nada-aqui-tab">
+    <div class="certs-grid">
+      <!-- Nada -->
+      <a href="certificados/nada/index.html" class="cert-card nada-card">
+        <div class="cert-icon">🚫</div>
+        <div class="cert-code">NADA</div>
+        <div class="cert-name">Nada Aqui</div>
+        <div class="cert-desc">Sai daqui curioso.</div>
+        <div class="cert-topics">
+          <span class="cert-topic-tag">1</span>
+          <span class="cert-topic-tag">2</span>
+          <span class="cert-topic-tag">3</span>
+          <span class="cert-topic-tag">4</span>
+        </div>
+        <button class="cert-btn">Cair fora</button>
+      </a>
+    </div>
+  </div>
+
 </main>
 
 <footer>
-  Made with dedication • AWS Learning Maps v2.0
+  Made with dedication • Learning Maps
 </footer>
+
+<script>
+  // Tab switching functionality
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabContents = document.querySelectorAll('.tab-content');
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tabName = btn.getAttribute('data-tab');
+      
+      // Remove active class from all buttons and contents
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabContents.forEach(content => content.classList.remove('active'));
+      
+      // Add active class to clicked button and corresponding content
+      btn.classList.add('active');
+      document.getElementById(`${tabName}-tab`).classList.add('active');
+    });
+  });
+</script>
 
 </body>
 </html>

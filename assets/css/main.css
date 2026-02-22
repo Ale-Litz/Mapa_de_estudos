@@ -5,6 +5,7 @@
   --surface: #111827;
   --border: #1e2d45;
   --text: #e2e8f0;
+  --text_to_muted: #a5a5a5;
   --muted: #64748b;
   --accent: #f97316;
   --aws: #FF9900;
@@ -110,6 +111,96 @@ main {
   justify-content: center;
 }
 
+/* ============================================================
+   TAB STYLES
+   ============================================================ */
+
+.tabs-container {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 40px;
+  border-bottom: 2px solid var(--border);
+  width: 100%;
+  max-width: 1200px;
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.tab-btn:hover {
+  color: var(--text);
+}
+
+.tab-btn.active {
+  color: var(--aws);
+  border-bottom-color: var(--aws);
+}
+
+.tab-icon {
+  font-size: 18px;
+}
+
+.tab-content {
+  width: 100%;
+  display: none;
+  animation: fadeInTab 0.3s ease;
+}
+
+.tab-content.active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+@keyframes fadeInTab {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Databricks Card Styling */
+.cert-card.databricks-card::before {
+  background: linear-gradient(90deg, #13adc7, #1e3a8a);
+}
+
+.cert-card.databricks-card:hover::before {
+  transform: scaleX(1);
+}
+
+.databricks-badge {
+  background: #13adc7;
+  color: #000;
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+}
+
+
+
 .certs-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -147,14 +238,15 @@ main {
   transform-origin: left;
 }
 
-.cert-card:hover::before {
-  transform: scaleX(1);
-}
-
 .cert-card:hover {
   transform: translateY(-8px);
   border-color: var(--aws);
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 153, 0, 0.2);
+}
+
+.cert-card.databricks-card:hover {
+  border-color: #13adc7;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(19, 173, 199, 0.2);
 }
 
 .cert-icon {
@@ -180,7 +272,7 @@ main {
 
 .cert-desc {
   font-size: 13px;
-  color: var(--muted);
+  color: var(--text_to_muted);
   line-height: 1.6;
   flex: 1;
 }
@@ -205,6 +297,11 @@ main {
   font-weight: 600;
 }
 
+.cert-card.databricks-card .cert-topic-tag {
+  background: rgba(19, 173, 199, 0.1);
+  color: #13adc7;
+}
+
 .cert-btn {
   background: var(--aws);
   color: #000;
@@ -223,6 +320,10 @@ main {
 
 .cert-btn:hover {
   opacity: 0.85;
+}
+
+.cert-card.databricks-card .cert-btn {
+  background: #13adc7;
 }
 
 footer {
