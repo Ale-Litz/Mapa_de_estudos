@@ -77,17 +77,14 @@ header {
 
 h1 {
   font-size: clamp(32px, 6vw, 48px);
-  font-weight: 800;
+  font-weight: 200;
   letter-spacing: -0.5px;
   line-height: 1.2;
-  margin-bottom: 12px;
-}
-
-h1 span {
-  color: var(--aws);
+  margin-bottom: 8px;
 }
 
 .subtitle {
+  display: flex;
   font-size: 16px;
   color: var(--muted);
   font-family: 'Poppins', sans-serif;
@@ -347,7 +344,7 @@ footer {
 .study-header .aws-badge { font-size: 11px; padding: 4px 10px; }
 .study-header h1 { font-size: clamp(20px, 4vw, 32px); font-weight: 800; letter-spacing: -0.5px; line-height: 1; }
 .study-header h1 span { color: var(--aws); }
-.study-header .subtitle { font-size: 13px; color: var(--muted); font-family: 'Poppins', sans-serif; margin-top: 4px; }
+.study-header .subtitle { display: flex; font-size: 13px; color: var(--muted); font-family: 'Poppins', sans-serif; margin-top: 4px; }
 .stats { display: flex; gap: 24px; flex-wrap: wrap; }
 .stat { text-align: right; }
 .stat-number { font-size: 28px; font-weight: 800; color: var(--aws); line-height: 1; font-family: 'Poppins', sans-serif; }
@@ -481,7 +478,7 @@ footer {
 .detail-icon { font-size: 48px; }
 .detail-title-section { flex: 1; }
 .detail-title-section h2 { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
-.detail-subtitle { color: var(--muted); font-size: 12px; }
+.detail-subtitle { display: flex; color: var(--muted); font-size: 12px; }
 .detail-back-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 8px 12px; border-radius: 4px; cursor: pointer; font-family: 'Poppins', sans-serif; font-size: 10px; transition: all 0.2s; }
 .detail-back-btn:hover { color: var(--text); border-color: var(--aws); background: rgba(255,153,0,0.05); }
 
